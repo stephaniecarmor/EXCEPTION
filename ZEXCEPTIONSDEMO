@@ -1,0 +1,44 @@
+*&---------------------------------------------------------------------*
+*& Report ZEXCEPTIONSDEMO
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zexceptionsdemo.
+
+PARAMETERS Num_1 TYPE i.
+
+DATA res_1 TYPE p DECIMALS 2.
+DATA orf_1 TYPE REF TO cx_root.
+DATA txt_1 TYPE        string.
+
+START-OF-SELECTION.
+  WRITE: / 'Raíz cuadrada y división con:', Num_1.
+  WRITE: '*****************' , /.
+
+  TRY.
+      IF abs( Num_1 ) > 150.
+        RAISE EXCEPTION TYPE cx_demo_abs_too_large.
+      ENDIF.
+
+      TRY.
+          res_1 = sqrt( Num_1 ).
+          WRITE: / 'Resultado de la raíz cuadrada:', res_1.
+          res_1 = 1 / Num_1.
+
+          WRITE: / 'Resultado de la division:', res_1.
+        CATCH cx_sy_zerodivide INTO orf_1.
+               txt_1 = orf_1->get_text( ).
+        CLEANUP.      "limpiar la variable
+               CLEAR res_1.
+      ENDTRY.
+
+    CATCH cx_sy_arithmetic_error INTO orf_1.
+      txt_1 = orf_1->get_text( ).
+
+    CATCH cx_root INTO orf_1.
+      txt_1 = orf_1->get_text( ).
+  ENDTRY.
+  IF NOT txt_1 IS INITIAL.
+    WRITE / txt_1.
+  ENDIF.
+  WRITE: / 'Final :', res_1.
